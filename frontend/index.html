@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RailYard - Visual Rails Schema Designer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1>RailYard</h1>
+            <p class="subtitle">Visual Rails Schema Designer</p>
+        </div>
+        <div class="toolbar">
+            <button id="add-model" class="btn btn-primary">+ Add Model</button>
+            <button id="clear-canvas" class="btn btn-secondary">Clear Canvas</button>
+            <div class="toolbar-divider"></div>
+            <input type="text" id="app-name" placeholder="app_name" value="my_rails_app">
+            <select id="database">
+                <option value="postgresql">PostgreSQL</option>
+                <option value="mysql">MySQL</option>
+                <option value="sqlite3">SQLite</option>
+            </select>
+            <select id="rails-version">
+                <option value="7.1">Rails 7.1</option>
+                <option value="7.0">Rails 7.0</option>
+                <option value="6.1">Rails 6.1</option>
+            </select>
+            <div class="toolbar-divider"></div>
+            <button id="save-schema" class="btn btn-secondary">Save Schema</button>
+            <button id="load-schema" class="btn btn-secondary">Load Schema</button>
+            <div class="toolbar-divider"></div>
+            <button id="export" class="btn btn-success">Generate Rails App</button>
+        </div>
+    </header>
+
+    <main id="canvas"></main>
+
+    <!-- Association Modal -->
+    <div id="association-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Create Association</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Association Type</label>
+                    <select id="assoc-type">
+                        <option value="belongs_to">belongs_to</option>
+                        <option value="has_many">has_many</option>
+                        <option value="has_one">has_one</option>
+                        <option value="has_and_belongs_to_many">has_and_belongs_to_many (HABTM)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Association Name</label>
+                    <input type="text" id="assoc-name" placeholder="e.g., posts, user">
+                </div>
+                <div class="form-group">
+                    <label>Options</label>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" id="assoc-optional"> optional</label>
+                        <label><input type="checkbox" id="assoc-dependent"> dependent: :destroy</label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="assoc-cancel" class="btn btn-secondary">Cancel</button>
+                <button id="assoc-create" class="btn btn-primary">Create</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Validation Modal -->
+    <div id="validation-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add Validation</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Field</label>
+                    <select id="val-field"></select>
+                </div>
+                <div class="form-group">
+                    <label>Validation Type</label>
+                    <select id="val-type">
+                        <option value="presence">presence</option>
+                        <option value="uniqueness">uniqueness</option>
+                        <option value="length">length</option>
+                        <option value="numericality">numericality</option>
+                        <option value="format">format</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="val-cancel" class="btn btn-secondary">Cancel</button>
+                <button id="val-create" class="btn btn-primary">Add</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Callback Modal -->
+    <div id="callback-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add Callback</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Callback Type</label>
+                    <select id="callback-type">
+                        <option value="before_validation">before_validation</option>
+                        <option value="after_validation">after_validation</option>
+                        <option value="before_save">before_save</option>
+                        <option value="after_save">after_save</option>
+                        <option value="before_create">before_create</option>
+                        <option value="after_create">after_create</option>
+                        <option value="before_update">before_update</option>
+                        <option value="after_update">after_update</option>
+                        <option value="before_destroy">before_destroy</option>
+                        <option value="after_destroy">after_destroy</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Method Name</label>
+                    <input type="text" id="callback-method" placeholder="e.g., set_default_values">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="callback-cancel" class="btn btn-secondary">Cancel</button>
+                <button id="callback-create" class="btn btn-primary">Add</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Result Modal -->
+    <div id="result-modal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>Generation Result</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="result-message"></div>
+                <div id="result-log"></div>
+            </div>
+            <div class="modal-footer">
+                <button id="result-close" class="btn btn-primary">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="vendor/leader-line.min.js"></script>
+    <script src="app.js"></script>
+    <script src="nodes.js"></script>
+    <script src="connections.js"></script>
+</body>
+</html>
