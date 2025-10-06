@@ -5,6 +5,9 @@ const State = {
   selectedModel: null,
   nextModelId: 1,
   nextConnectionId: 1,
+  zoom: 1,
+  panX: 0,
+  panY: 0,
 
   addModel(model) {
     this.models.set(model.id, model);
@@ -118,6 +121,41 @@ function setupEventListeners() {
   document.getElementById('export').addEventListener('click', generateRailsApp);
   document.getElementById('save-schema').addEventListener('click', saveSchema);
   document.getElementById('load-schema').addEventListener('click', loadSchema);
+
+  // Zoom controls
+  document.getElementById('zoom-in').addEventListener('click', zoomIn);
+  document.getElementById('zoom-out').addEventListener('click', zoomOut);
+  document.getElementById('zoom-reset').addEventListener('click', zoomReset);
+
+  // Canvas pan/drag
+  setupCanvasPan();
+
+  // Keyboard shortcuts for zoom
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === '=') {
+      e.preventDefault();
+      zoomIn();
+    } else if ((e.ctrlKey || e.metaKey) && e.key === '-') {
+      e.preventDefault();
+      zoomOut();
+    } else if ((e.ctrlKey || e.metaKey) && e.key === '0') {
+      e.preventDefault();
+      zoomReset();
+    }
+  });
+
+  // Mouse wheel zoom
+  const canvas = document.getElementById('canvas');
+  canvas.addEventListener('wheel', (e) => {
+    if (e.ctrlKey || e.metaKey) {
+      e.preventDefault();
+      if (e.deltaY < 0) {
+        zoomIn();
+      } else {
+        zoomOut();
+      }
+    }
+  }, { passive: false });
 
   // Modal close buttons
   document.querySelectorAll('.modal-close').forEach(btn => {
@@ -323,4 +361,79 @@ function generateId() {
 
 function generateConnectionId() {
   return `conn-${State.nextConnectionId++}`;
+}
+
+// Zoom and Pan functionality
+function updateCanvasTransform() {
+  const canvasContent = document.getElementById('canvas-content');
+  canvasContent.style.transform = `translate(${State.panX}px, ${State.panY}px) scale(${State.zoom})`;
+
+  // Update zoom display
+  document.getElementById('zoom-reset').textContent = `${Math.round(State.zoom * 100)}%`;
+
+  // Update all connection lines
+  State.connections.forEach(conn => {
+    if (conn.line) {
+      conn.line.position();
+    }
+  });
+}
+
+function zoomIn() {
+  if (State.zoom < 2) {
+    State.zoom = Math.min(2, State.zoom + 0.1);
+    updateCanvasTransform();
+  }
+}
+
+function zoomOut() {
+  if (State.zoom > 0.3) {
+    State.zoom = Math.max(0.3, State.zoom - 0.1);
+    updateCanvasTransform();
+  }
+}
+
+function zoomReset() {
+  State.zoom = 1;
+  State.panX = 0;
+  State.panY = 0;
+  updateCanvasTransform();
+}
+
+function setupCanvasPan() {
+  const canvas = document.getElementById('canvas');
+  let isPanning = false;
+  let startX = 0;
+  let startY = 0;
+  let startPanX = 0;
+  let startPanY = 0;
+
+  canvas.addEventListener('mousedown', (e) => {
+    // Only pan if clicking on canvas background (not on a model or port)
+    if (e.target.id === 'canvas' || e.target.id === 'canvas-content') {
+      isPanning = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      startPanX = State.panX;
+      startPanY = State.panY;
+      canvas.classList.add('panning');
+    }
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (isPanning) {
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      State.panX = startPanX + dx;
+      State.panY = startPanY + dy;
+      updateCanvasTransform();
+    }
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (isPanning) {
+      isPanning = false;
+      canvas.classList.remove('panning');
+    }
+  });
 }

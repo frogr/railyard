@@ -187,16 +187,22 @@ function createConnectionBetween(fromModelId, toModelId, type, name, options = {
     {
       color: getColorForAssociationType(type),
       size: 3,
-      path: 'fluid',
+      path: 'straight',
       dash: getDashForAssociationType(type),
-      startPlug: 'disc',
+      startPlug: getStartPlugForAssociationType(type),
       endPlug: getPlugForAssociationType(type),
       startPlugColor: getColorForAssociationType(type),
       endPlugColor: getColorForAssociationType(type),
-      startPlugSize: 2,
-      endPlugSize: 2.5
+      startPlugSize: 2.5,
+      endPlugSize: 3
     }
   );
+
+  // Fix drag issue: Prevent LeaderLine from blocking mouse events
+  const lineElements = document.querySelectorAll('.leader-line');
+  lineElements.forEach(el => {
+    el.style.pointerEvents = 'none';
+  });
 
   // Create connection object
   const connection = {
@@ -211,62 +217,66 @@ function createConnectionBetween(fromModelId, toModelId, type, name, options = {
 
   State.addConnection(connection);
 
-  // Add click handler to line for deletion
-  line.element = line.element || line._element;
-  if (line.element) {
-    line.element.style.cursor = 'pointer';
-    line.element.addEventListener('click', (e) => {
-      if (confirm(`Delete association "${name}"?`)) {
-        State.removeConnection(connection.id);
-      }
-    });
-  }
-
   console.log('Created association:', connection);
 }
 
 function getColorForAssociationType(type) {
   switch (type) {
     case 'belongs_to':
-      return '#3b82f6'; // Blue
+      return '#3b82f6'; // Blue - single relationship
     case 'has_many':
-      return '#10b981'; // Green
+      return '#10b981'; // Green - many relationship
     case 'has_one':
-      return '#8b5cf6'; // Purple
+      return '#a855f7'; // Purple - single relationship
     case 'has_and_belongs_to_many':
-      return '#f59e0b'; // Orange
+      return '#f59e0b'; // Orange - many-to-many
     default:
-      return '#667eea';
+      return '#64748b';
   }
 }
 
 function getDashForAssociationType(type) {
   switch (type) {
     case 'belongs_to':
-      return false; // Solid line
+      return false; // Solid - belongs to one
     case 'has_many':
-      return { len: 8, gap: 4 };
+      return { len: 12, gap: 6 }; // Dashed - has multiple
     case 'has_one':
-      return false;
+      return false; // Solid - has one
     case 'has_and_belongs_to_many':
-      return { len: 4, gap: 4 };
+      return { len: 6, gap: 6 }; // Short dash - many-to-many
     default:
       return false;
+  }
+}
+
+function getStartPlugForAssociationType(type) {
+  switch (type) {
+    case 'belongs_to':
+      return 'disc'; // Circle - originating side
+    case 'has_many':
+      return 'disc'; // Circle - has many from this side
+    case 'has_one':
+      return 'disc'; // Circle - has one from this side
+    case 'has_and_belongs_to_many':
+      return 'arrow3'; // Arrow both ends for many-to-many
+    default:
+      return 'disc';
   }
 }
 
 function getPlugForAssociationType(type) {
   switch (type) {
     case 'belongs_to':
-      return 'arrow3';
+      return 'arrow1'; // Single arrow - points to one
     case 'has_many':
-      return 'arrow2';
+      return 'arrow3'; // Crow's foot - points to many
     case 'has_one':
-      return 'arrow1';
+      return 'arrow1'; // Single arrow - points to one
     case 'has_and_belongs_to_many':
-      return 'arrow2';
+      return 'arrow3'; // Crow's foot - many on both ends
     default:
-      return 'arrow2';
+      return 'arrow1';
   }
 }
 

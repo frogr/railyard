@@ -130,11 +130,68 @@ input[type="text"]::placeholder {
     position: relative;
     width: 100%;
     height: calc(100vh - 120px);
-    overflow: auto;
+    overflow: hidden;
     background-image:
         radial-gradient(circle, #334155 1px, transparent 1px);
     background-size: 20px 20px;
     background-color: #0f172a;
+    cursor: grab;
+}
+
+#canvas.panning {
+    cursor: grabbing;
+}
+
+#canvas-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 5000px;
+    height: 5000px;
+    transform-origin: 0 0;
+    transition: transform 0.1s ease-out;
+}
+
+/* Zoom Controls */
+.zoom-controls {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    z-index: 100;
+}
+
+.zoom-btn {
+    width: 48px;
+    height: 48px;
+    background: #1e293b;
+    border: 1px solid #475569;
+    border-radius: 8px;
+    color: #e2e8f0;
+    font-size: 1.2rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.zoom-btn:hover {
+    background: #334155;
+    border-color: #64748b;
+    transform: scale(1.05);
+}
+
+.zoom-btn:active {
+    transform: scale(0.95);
+}
+
+#zoom-reset {
+    font-size: 0.75rem;
+    padding: 0.25rem;
 }
 
 /* Model Node */

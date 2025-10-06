@@ -33,7 +33,7 @@ function createModelWithData(x, y, data) {
 }
 
 function renderModelNode(model) {
-  const canvas = document.getElementById('canvas');
+  const canvasContent = document.getElementById('canvas-content');
 
   const node = document.createElement('div');
   node.className = 'model-node';
@@ -69,7 +69,7 @@ function renderModelNode(model) {
     </div>
   `;
 
-  canvas.appendChild(node);
+  canvasContent.appendChild(node);
 
   // Render existing fields, validations, callbacks
   renderFields(model);
