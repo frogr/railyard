@@ -2,21 +2,28 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    user-select: none; /* Prevent text selection during drag */
+}
+
+/* Allow text selection in inputs only */
+input, textarea {
+    user-select: text;
 }
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    background: #f5f7fa;
+    background: #0f172a;
+    color: #e2e8f0;
     height: 100vh;
     overflow: hidden;
 }
 
 /* Header */
 header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: #1e293b;
+    color: #e2e8f0;
     padding: 1rem 2rem;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid #334155;
 }
 
 .header-content {
@@ -29,11 +36,12 @@ header {
 .header-content h1 {
     font-size: 1.75rem;
     font-weight: 600;
+    color: #60a5fa;
 }
 
 .subtitle {
     font-size: 0.9rem;
-    opacity: 0.9;
+    color: #94a3b8;
 }
 
 .toolbar {
@@ -46,7 +54,7 @@ header {
 .toolbar-divider {
     width: 1px;
     height: 24px;
-    background: rgba(255, 255, 255, 0.3);
+    background: #334155;
     margin: 0 0.25rem;
 }
 
@@ -62,51 +70,55 @@ header {
 }
 
 .btn-primary {
-    background: white;
-    color: #667eea;
+    background: #3b82f6;
+    color: white;
 }
 
 .btn-primary:hover {
+    background: #2563eb;
     transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .btn-secondary {
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: #334155;
+    color: #e2e8f0;
+    border: 1px solid #475569;
 }
 
 .btn-secondary:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: #475569;
 }
 
 .btn-success {
-    background: #48bb78;
+    background: #10b981;
     color: white;
 }
 
 .btn-success:hover {
-    background: #38a169;
+    background: #059669;
     transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* Inputs */
 input[type="text"],
 select {
     padding: 0.5rem 0.75rem;
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    border: 1px solid #475569;
     border-radius: 6px;
     font-size: 0.9rem;
-    background: rgba(255, 255, 255, 0.9);
+    background: #1e293b;
+    color: #e2e8f0;
 }
 
 input[type="text"]:focus,
 select:focus {
     outline: none;
-    border-color: white;
-    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2);
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+input[type="text"]::placeholder {
+    color: #64748b;
 }
 
 #app-name {
@@ -120,35 +132,37 @@ select:focus {
     height: calc(100vh - 120px);
     overflow: auto;
     background-image:
-        radial-gradient(circle, #d1d5db 1px, transparent 1px);
+        radial-gradient(circle, #334155 1px, transparent 1px);
     background-size: 20px 20px;
-    background-color: #f9fafb;
+    background-color: #0f172a;
 }
 
 /* Model Node */
 .model-node {
     position: absolute;
     width: 300px;
-    background: white;
+    background: #1e293b;
     border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    border: 2px solid #e5e7eb;
-    transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    border: 2px solid #334155;
+    transition: box-shadow 0.1s, border-color 0.1s;
     cursor: move;
+    will-change: transform;
 }
 
 .model-node:hover {
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
 }
 
 .model-node.selected {
-    border-color: #667eea;
-    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    border-color: #3b82f6;
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
 }
 
 .model-node.dragging {
-    opacity: 0.8;
+    opacity: 0.9;
     cursor: grabbing;
+    transition: none;
 }
 
 /* Model Header */
@@ -157,15 +171,16 @@ select:focus {
     align-items: center;
     gap: 0.5rem;
     padding: 1rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #334155;
     border-radius: 10px 10px 0 0;
+    cursor: move;
 }
 
 .model-name {
     flex: 1;
-    background: rgba(255, 255, 255, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: white;
+    background: #1e293b;
+    border: 1px solid #475569;
+    color: #e2e8f0;
     padding: 0.5rem;
     border-radius: 6px;
     font-size: 1.1rem;
@@ -173,13 +188,13 @@ select:focus {
 }
 
 .model-name::placeholder {
-    color: rgba(255, 255, 255, 0.7);
+    color: #64748b;
 }
 
 .delete-model {
-    background: rgba(255, 255, 255, 0.2);
+    background: #475569;
     border: none;
-    color: white;
+    color: #e2e8f0;
     width: 32px;
     height: 32px;
     border-radius: 6px;
@@ -192,7 +207,7 @@ select:focus {
 }
 
 .delete-model:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: #ef4444;
 }
 
 /* Model Body */
@@ -208,7 +223,7 @@ select:focus {
 .section-title {
     font-size: 0.85rem;
     font-weight: 600;
-    color: #6b7280;
+    color: #94a3b8;
     margin-bottom: 0.5rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -220,22 +235,25 @@ select:focus {
     align-items: center;
     margin-bottom: 0.5rem;
     padding: 0.5rem;
-    background: #f9fafb;
+    background: #0f172a;
     border-radius: 6px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid #334155;
 }
 
 .field input[type="text"] {
     flex: 1;
     min-width: 0;
-    border: 1px solid #d1d5db;
+    border: 1px solid #475569;
     padding: 0.4rem;
+    background: #1e293b;
+    color: #e2e8f0;
 }
 
 .field select {
-    border: 1px solid #d1d5db;
+    border: 1px solid #475569;
     padding: 0.4rem;
-    background: white;
+    background: #1e293b;
+    color: #e2e8f0;
 }
 
 .field-btn {
@@ -243,13 +261,13 @@ select:focus {
     border: none;
     cursor: pointer;
     font-size: 1.2rem;
-    color: #6b7280;
+    color: #94a3b8;
     padding: 0.25rem;
     transition: color 0.2s;
 }
 
 .field-btn:hover {
-    color: #374151;
+    color: #e2e8f0;
 }
 
 .delete-field:hover {
@@ -261,10 +279,10 @@ select:focus {
 .add-callback {
     width: 100%;
     padding: 0.5rem;
-    background: #f3f4f6;
-    border: 1px dashed #d1d5db;
+    background: #0f172a;
+    border: 1px dashed #475569;
     border-radius: 6px;
-    color: #6b7280;
+    color: #94a3b8;
     font-size: 0.9rem;
     cursor: pointer;
     transition: all 0.2s;
@@ -273,9 +291,9 @@ select:focus {
 .add-field:hover,
 .add-validation:hover,
 .add-callback:hover {
-    background: #e5e7eb;
-    border-color: #9ca3af;
-    color: #374151;
+    background: #1e293b;
+    border-color: #64748b;
+    color: #e2e8f0;
 }
 
 /* Validations and Callbacks */
@@ -290,20 +308,23 @@ select:focus {
     justify-content: space-between;
     align-items: center;
     padding: 0.5rem;
-    background: #fef3c7;
+    background: #422006;
+    border: 1px solid #78350f;
     border-radius: 6px;
     margin-bottom: 0.5rem;
     font-size: 0.85rem;
 }
 
 .callback-item {
-    background: #dbeafe;
+    background: #1e3a8a;
+    border: 1px solid #1e40af;
 }
 
 .validation-item code,
 .callback-item code {
     font-family: 'Monaco', 'Courier New', monospace;
     font-size: 0.8rem;
+    color: #e2e8f0;
 }
 
 /* Connection Ports */
@@ -316,8 +337,8 @@ select:focus {
     position: absolute;
     width: 16px;
     height: 16px;
-    background: #667eea;
-    border: 3px solid white;
+    background: #3b82f6;
+    border: 3px solid #1e293b;
     border-radius: 50%;
     cursor: crosshair;
     transition: all 0.2s;
@@ -339,7 +360,7 @@ select:focus {
 .port-out:hover,
 .port-in:hover {
     transform: translateY(-50%) scale(1.3);
-    background: #764ba2;
+    background: #60a5fa;
 }
 
 /* Modals */
@@ -350,7 +371,7 @@ select:focus {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.7);
     align-items: center;
     justify-content: center;
     z-index: 1000;
@@ -361,11 +382,12 @@ select:focus {
 }
 
 .modal-content {
-    background: white;
+    background: #1e293b;
+    border: 1px solid #334155;
     border-radius: 12px;
     width: 90%;
     max-width: 500px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
 }
 
 .modal-large {
@@ -377,25 +399,25 @@ select:focus {
     justify-content: space-between;
     align-items: center;
     padding: 1.5rem;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid #334155;
 }
 
 .modal-header h2 {
     font-size: 1.5rem;
-    color: #1f2937;
+    color: #e2e8f0;
 }
 
 .modal-close {
     background: none;
     border: none;
     font-size: 2rem;
-    color: #6b7280;
+    color: #94a3b8;
     cursor: pointer;
     line-height: 1;
 }
 
 .modal-close:hover {
-    color: #374151;
+    color: #e2e8f0;
 }
 
 .modal-body {
@@ -409,7 +431,7 @@ select:focus {
     gap: 0.5rem;
     justify-content: flex-end;
     padding: 1rem 1.5rem;
-    border-top: 1px solid #e5e7eb;
+    border-top: 1px solid #334155;
 }
 
 /* Form Elements in Modals */
@@ -421,16 +443,18 @@ select:focus {
     display: block;
     margin-bottom: 0.5rem;
     font-weight: 500;
-    color: #374151;
+    color: #e2e8f0;
 }
 
 .form-group input[type="text"],
 .form-group select {
     width: 100%;
     padding: 0.75rem;
-    border: 1px solid #d1d5db;
+    border: 1px solid #475569;
     border-radius: 6px;
     font-size: 1rem;
+    background: #0f172a;
+    color: #e2e8f0;
 }
 
 .checkbox-group {
@@ -455,22 +479,23 @@ select:focus {
 }
 
 #result-message.success {
-    background: #d1fae5;
-    color: #065f46;
-    border: 1px solid #6ee7b7;
+    background: #064e3b;
+    color: #6ee7b7;
+    border: 1px solid #10b981;
 }
 
 #result-message.error {
-    background: #fee2e2;
-    color: #991b1b;
-    border: 1px solid #fca5a5;
+    background: #7f1d1d;
+    color: #fca5a5;
+    border: 1px solid #ef4444;
 }
 
 #result-log {
-    background: #1f2937;
-    color: #f3f4f6;
+    background: #0f172a;
+    color: #e2e8f0;
     padding: 1rem;
     border-radius: 6px;
+    border: 1px solid #334155;
     font-family: 'Monaco', 'Courier New', monospace;
     font-size: 0.85rem;
     max-height: 400px;
@@ -486,16 +511,16 @@ select:focus {
 }
 
 ::-webkit-scrollbar-track {
-    background: #f1f1f1;
+    background: #0f172a;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #888;
+    background: #475569;
     border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #555;
+    background: #64748b;
 }
 
 /* Loading State */
@@ -512,8 +537,8 @@ select:focus {
     width: 40px;
     height: 40px;
     margin: -20px 0 0 -20px;
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid #667eea;
+    border: 4px solid #334155;
+    border-top: 4px solid #3b82f6;
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }

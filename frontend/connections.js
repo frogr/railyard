@@ -32,6 +32,9 @@ function setupConnectionHandlers() {
 }
 
 function startConnection(e) {
+  e.preventDefault();
+  e.stopPropagation();
+
   const port = e.target;
   const modelNode = port.closest('.model-node');
 
@@ -43,8 +46,17 @@ function startConnection(e) {
   };
 
   // Visual feedback
-  port.style.background = '#48bb78';
+  port.style.background = '#10b981';
   document.body.style.cursor = 'crosshair';
+
+  // Add a global mousemove listener to update cursor
+  document.addEventListener('mousemove', preventTextSelection, { passive: false });
+}
+
+function preventTextSelection(e) {
+  if (pendingConnection) {
+    e.preventDefault();
+  }
 }
 
 function endConnection(e) {
@@ -92,10 +104,13 @@ function cancelConnection() {
 
 function resetConnectionState() {
   if (pendingConnection && pendingConnection.fromPort) {
-    pendingConnection.fromPort.style.background = '#667eea';
+    pendingConnection.fromPort.style.background = '#3b82f6';
   }
   pendingConnection = null;
   document.body.style.cursor = 'default';
+
+  // Remove the mousemove listener
+  document.removeEventListener('mousemove', preventTextSelection);
 }
 
 function showAssociationModal(fromModelId, toModelId) {

@@ -59,7 +59,7 @@ class RailsBuilder
   private
 
   def generate_rails_new_command
-    cmd = "rails _#{@rails_version}.0_ new #{@app_name}"
+    cmd = "rails new #{@app_name}"
     cmd += " --database=#{@database}"
     cmd += " --api" if @api_only
     cmd += " --skip-test" # Skip test files for simplicity

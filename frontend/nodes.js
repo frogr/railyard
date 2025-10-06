@@ -123,6 +123,7 @@ function setupNodeEventListeners(node, model) {
 
 function makeDraggable(element, model) {
   let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+  let rafId = null;
 
   const header = element.querySelector('.model-header');
 
@@ -146,29 +147,45 @@ function makeDraggable(element, model) {
 
   function elementDrag(e) {
     e.preventDefault();
-    pos1 = pos3 - e.clientX;
-    pos2 = pos4 - e.clientY;
-    pos3 = e.clientX;
-    pos4 = e.clientY;
 
-    const newTop = element.offsetTop - pos2;
-    const newLeft = element.offsetLeft - pos1;
+    // Cancel previous animation frame if it exists
+    if (rafId) {
+      cancelAnimationFrame(rafId);
+    }
 
-    element.style.top = newTop + "px";
-    element.style.left = newLeft + "px";
+    // Use requestAnimationFrame for smooth 60fps updates
+    rafId = requestAnimationFrame(() => {
+      pos1 = pos3 - e.clientX;
+      pos2 = pos4 - e.clientY;
+      pos3 = e.clientX;
+      pos4 = e.clientY;
 
-    // Update model position
-    model.position.x = newLeft;
-    model.position.y = newTop;
+      const newTop = element.offsetTop - pos2;
+      const newLeft = element.offsetLeft - pos1;
 
-    // Update connections
-    updateConnectionsForModel(model.id);
+      element.style.top = newTop + "px";
+      element.style.left = newLeft + "px";
+
+      // Update model position
+      model.position.x = newLeft;
+      model.position.y = newTop;
+
+      // Update connections - this is now batched by RAF
+      updateConnectionsForModel(model.id);
+    });
   }
 
   function closeDragElement() {
     document.onmouseup = null;
     document.onmousemove = null;
     element.classList.remove('dragging');
+
+    // Final connection update after drag ends
+    if (rafId) {
+      cancelAnimationFrame(rafId);
+      rafId = null;
+    }
+    updateConnectionsForModel(model.id);
   }
 }
 
