@@ -1,5 +1,6 @@
 const Connections = {
   pendingConnection: null,
+  tempLine: null,
 
   init() {
     this.setupHandlers();
@@ -17,12 +18,20 @@ const Connections = {
     canvas.addEventListener('mouseup', (e) => {
       if (e.target.classList.contains('port-in') && this.pendingConnection) {
         this.end(e);
+      } else if (this.pendingConnection) {
+        this.cancel();
       }
     });
 
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && this.pendingConnection) {
         this.cancel();
+      }
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (this.pendingConnection && this.tempLine) {
+        this.updateTempLine(e);
       }
     });
   },
@@ -42,7 +51,78 @@ const Connections = {
 
     port.style.background = '#10b981';
     document.body.style.cursor = 'crosshair';
+
+    console.log('Starting connection from', modelNode.id);
+    this.createTempLine(port, e);
     document.addEventListener('mousemove', this.preventTextSelection, { passive: false });
+  },
+
+  createTempLine(fromPort, mouseEvent) {
+    const canvas = document.getElementById('canvas');
+    const canvasRect = canvas.getBoundingClientRect();
+
+    const mouseTarget = document.createElement('div');
+    mouseTarget.style.position = 'absolute';
+    mouseTarget.style.width = '10px';
+    mouseTarget.style.height = '10px';
+    mouseTarget.style.pointerEvents = 'none';
+    mouseTarget.style.zIndex = '1000';
+    mouseTarget.style.left = (mouseEvent.clientX - canvasRect.left + canvas.scrollLeft) + 'px';
+    mouseTarget.style.top = (mouseEvent.clientY - canvasRect.top + canvas.scrollTop) + 'px';
+
+    const canvasContent = document.getElementById('canvas-content');
+    canvasContent.appendChild(mouseTarget);
+
+    this.pendingConnection.mouseTarget = mouseTarget;
+    this.pendingConnection.canvasRect = canvasRect;
+    this.pendingConnection.canvas = canvas;
+
+    requestAnimationFrame(() => {
+      try {
+        this.tempLine = new LeaderLine(
+          fromPort,
+          mouseTarget,
+          {
+            color: '#64748b',
+            size: 3,
+            path: 'straight',
+            dash: { len: 8, gap: 4 },
+            startPlug: 'disc',
+            endPlug: 'disc',
+            startPlugSize: 2.5,
+            endPlugSize: 2.5
+          }
+        );
+
+        console.log('Temp line created:', this.tempLine);
+
+        if (this.tempLine) {
+          this.tempLine.position();
+          const lineElements = document.querySelectorAll('.leader-line');
+          lineElements.forEach(el => {
+            el.style.pointerEvents = 'none';
+          });
+        }
+      } catch (error) {
+        console.error('Error creating temp line:', error);
+      }
+    });
+  },
+
+  updateTempLine(e) {
+    if (this.pendingConnection && this.pendingConnection.mouseTarget) {
+      const canvas = this.pendingConnection.canvas;
+      const canvasRect = canvas.getBoundingClientRect();
+      const x = e.clientX - canvasRect.left + canvas.scrollLeft;
+      const y = e.clientY - canvasRect.top + canvas.scrollTop;
+
+      this.pendingConnection.mouseTarget.style.left = x + 'px';
+      this.pendingConnection.mouseTarget.style.top = y + 'px';
+
+      if (this.tempLine) {
+        this.tempLine.position();
+      }
+    }
   },
 
   preventTextSelection(e) {
@@ -93,6 +173,16 @@ const Connections = {
     if (this.pendingConnection && this.pendingConnection.fromPort) {
       this.pendingConnection.fromPort.style.background = '#3b82f6';
     }
+
+    if (this.tempLine) {
+      this.tempLine.remove();
+      this.tempLine = null;
+    }
+
+    if (this.pendingConnection && this.pendingConnection.mouseTarget) {
+      this.pendingConnection.mouseTarget.remove();
+    }
+
     this.pendingConnection = null;
     document.body.style.cursor = 'default';
     document.removeEventListener('mousemove', this.preventTextSelection);
@@ -106,18 +196,63 @@ const Connections = {
     const fromPort = fromNode.querySelector('.port-out');
     const toPort = toNode.querySelector('.port-in');
 
-    const line = new LeaderLine(fromPort, toPort, {
-      color: this.getColor(type),
-      size: 3,
-      path: 'straight',
-      dash: this.getDash(type),
-      startPlug: this.getStartPlug(type),
-      endPlug: this.getEndPlug(type),
-      startPlugColor: this.getColor(type),
-      endPlugColor: this.getColor(type),
-      startPlugSize: 2.5,
-      endPlugSize: 3
-    });
+    let line, throughLine = null;
+
+    if (options.through) {
+      const throughModelName = options.through.replace(':', '');
+      const throughModel = Array.from(State.models.values()).find(
+        m => m.name.toLowerCase() === throughModelName.toLowerCase()
+      );
+
+      if (throughModel) {
+        const throughNode = document.getElementById(throughModel.id);
+        if (throughNode) {
+          const throughPortIn = throughNode.querySelector('.port-in');
+          const throughPortOut = throughNode.querySelector('.port-out');
+
+          throughLine = new LeaderLine(fromPort, throughPortIn, {
+            color: this.getColor(type),
+            size: 3,
+            path: 'straight',
+            dash: { len: 6, gap: 3 },
+            startPlug: this.getStartPlug(type),
+            endPlug: 'disc',
+            startPlugColor: this.getColor(type),
+            endPlugColor: this.getColor(type),
+            startPlugSize: 2.5,
+            endPlugSize: 3
+          });
+
+          line = new LeaderLine(throughPortOut, toPort, {
+            color: this.getColor(type),
+            size: 3,
+            path: 'straight',
+            dash: { len: 6, gap: 3 },
+            startPlug: 'disc',
+            endPlug: this.getEndPlug(type),
+            startPlugColor: this.getColor(type),
+            endPlugColor: this.getColor(type),
+            startPlugSize: 2.5,
+            endPlugSize: 3
+          });
+        }
+      }
+    }
+
+    if (!line) {
+      line = new LeaderLine(fromPort, toPort, {
+        color: this.getColor(type),
+        size: 3,
+        path: 'straight',
+        dash: this.getDash(type),
+        startPlug: this.getStartPlug(type),
+        endPlug: this.getEndPlug(type),
+        startPlugColor: this.getColor(type),
+        endPlugColor: this.getColor(type),
+        startPlugSize: 2.5,
+        endPlugSize: 3
+      });
+    }
 
     const lineElements = document.querySelectorAll('.leader-line');
     lineElements.forEach(el => {
@@ -131,7 +266,8 @@ const Connections = {
       type: type,
       name: name,
       options: options,
-      line: line
+      line: line,
+      throughLine: throughLine
     };
 
     State.addConnection(connection);
@@ -175,11 +311,13 @@ const Connections = {
 window.addEventListener('resize', () => {
   State.connections.forEach(conn => {
     if (conn.line) conn.line.position();
+    if (conn.throughLine) conn.throughLine.position();
   });
 });
 
 document.getElementById('canvas').addEventListener('scroll', () => {
   State.connections.forEach(conn => {
     if (conn.line) conn.line.position();
+    if (conn.throughLine) conn.throughLine.position();
   });
 });

@@ -125,6 +125,35 @@ input[type="text"]::placeholder {
     min-width: 150px;
 }
 
+/* Checkbox in Toolbar */
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: #334155;
+    border: 1px solid #475569;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.checkbox-label:hover {
+    background: #475569;
+}
+
+.checkbox-label input[type="checkbox"] {
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+}
+
+.checkbox-label span {
+    font-size: 0.9rem;
+    color: #e2e8f0;
+    user-select: none;
+}
+
 /* Canvas */
 #canvas {
     position: relative;

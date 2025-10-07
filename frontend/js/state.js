@@ -13,10 +13,27 @@ const State = {
   },
 
   removeModel(id) {
+    const model = this.models.get(id);
+    if (!model) return;
+
     this.models.delete(id);
     this.connections.forEach((conn, connId) => {
+      let shouldRemove = false;
+
       if (conn.from === id || conn.to === id) {
-        conn.line.remove();
+        shouldRemove = true;
+      }
+
+      if (conn.options && conn.options.through && model) {
+        const throughModelName = conn.options.through.replace(':', '');
+        if (model.name.toLowerCase() === throughModelName.toLowerCase()) {
+          shouldRemove = true;
+        }
+      }
+
+      if (shouldRemove) {
+        if (conn.line) conn.line.remove();
+        if (conn.throughLine) conn.throughLine.remove();
         this.connections.delete(connId);
       }
     });
@@ -32,8 +49,13 @@ const State = {
 
   removeConnection(id) {
     const connection = this.connections.get(id);
-    if (connection && connection.line) {
-      connection.line.remove();
+    if (connection) {
+      if (connection.line) {
+        connection.line.remove();
+      }
+      if (connection.throughLine) {
+        connection.throughLine.remove();
+      }
     }
     this.connections.delete(id);
   },
@@ -41,6 +63,7 @@ const State = {
   clear() {
     this.connections.forEach(conn => {
       if (conn.line) conn.line.remove();
+      if (conn.throughLine) conn.throughLine.remove();
     });
     this.connections.clear();
 
@@ -88,7 +111,7 @@ const State = {
       app_name: document.getElementById('app-name').value || 'my_rails_app',
       rails_version: document.getElementById('rails-version').value,
       database: document.getElementById('database').value,
-      api_only: false,
+      api_only: document.getElementById('api-only').checked,
       models: models
     };
   },

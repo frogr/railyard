@@ -27,6 +27,10 @@
                 <option value="7.0">Rails 7.0</option>
                 <option value="6.1">Rails 6.1</option>
             </select>
+            <label class="checkbox-label">
+                <input type="checkbox" id="api-only">
+                <span>API Only</span>
+            </label>
             <div class="toolbar-divider"></div>
             <button id="save-schema" class="btn btn-secondary">Save Schema</button>
             <button id="load-schema" class="btn btn-secondary">Load Schema</button>
@@ -67,11 +71,21 @@
                     <label>Association Name</label>
                     <input type="text" id="assoc-name" placeholder="e.g., posts, user">
                 </div>
+                <div class="form-group" id="through-group" style="display: none;">
+                    <label>Through Model (optional)</label>
+                    <select id="assoc-through">
+                        <option value="">None</option>
+                    </select>
+                    <small style="color: #94a3b8; font-size: 0.85rem; margin-top: 0.25rem; display: block;">
+                        For has_many :through associations
+                    </small>
+                </div>
                 <div class="form-group">
                     <label>Options</label>
                     <div class="checkbox-group">
-                        <label><input type="checkbox" id="assoc-optional"> optional</label>
-                        <label><input type="checkbox" id="assoc-dependent"> dependent: :destroy</label>
+                        <label id="optional-label"><input type="checkbox" id="assoc-optional"> optional</label>
+                        <label id="dependent-label"><input type="checkbox" id="assoc-dependent"> dependent: :destroy</label>
+                        <label id="polymorphic-label" style="display: none;"><input type="checkbox" id="assoc-polymorphic"> polymorphic</label>
                     </div>
                 </div>
             </div>

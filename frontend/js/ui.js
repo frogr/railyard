@@ -143,6 +143,7 @@ const UI = {
             document.getElementById('app-name').value = data.schema.app_name || 'my_rails_app';
             document.getElementById('rails-version').value = data.schema.rails_version || '7.1';
             document.getElementById('database').value = data.schema.database || 'postgresql';
+            document.getElementById('api-only').checked = data.schema.api_only || false;
 
             if (data.schema.models) {
               data.schema.models.forEach((modelData, index) => {
@@ -247,18 +248,57 @@ const UI = {
 
     const typeSelect = document.getElementById('assoc-type');
     const nameInput = document.getElementById('assoc-name');
+    const throughSelect = document.getElementById('assoc-through');
 
-    const updateAssociationName = () => {
+    if (!typeSelect || !nameInput || !throughSelect) {
+      console.error('Modal elements not found');
+      return;
+    }
+
+    const populateThroughDropdown = () => {
+      throughSelect.innerHTML = '<option value="">None</option>';
+      State.models.forEach(model => {
+        if (model.id !== fromModelId && model.id !== toModelId) {
+          throughSelect.innerHTML += `<option value="${model.name.toLowerCase()}">${model.name}</option>`;
+        }
+      });
+    };
+
+    const updateUIBasedOnType = () => {
       const type = typeSelect.value;
+
       if (type === 'belongs_to' || type === 'has_one') {
         nameInput.value = toModel.name.toLowerCase();
       } else {
         nameInput.value = toModel.name.toLowerCase() + 's';
       }
+
+      const throughGroup = document.getElementById('through-group');
+      const polymorphicLabel = document.getElementById('polymorphic-label');
+      const optionalLabel = document.getElementById('optional-label');
+      const dependentLabel = document.getElementById('dependent-label');
+
+      if (throughGroup) {
+        throughGroup.style.display = (type === 'has_many' || type === 'has_one') ? 'block' : 'none';
+      }
+
+      if (polymorphicLabel) {
+        polymorphicLabel.style.display = type === 'belongs_to' ? 'flex' : 'none';
+      }
+
+      if (optionalLabel) {
+        optionalLabel.style.display = type === 'belongs_to' ? 'flex' : 'none';
+      }
+
+      if (dependentLabel) {
+        dependentLabel.style.display = (type === 'has_many' || type === 'has_one') ? 'flex' : 'none';
+      }
     };
 
-    typeSelect.addEventListener('change', updateAssociationName);
-    updateAssociationName();
+    populateThroughDropdown();
+
+    typeSelect.onchange = updateUIBasedOnType;
+    updateUIBasedOnType();
 
     modal.classList.add('active');
 
@@ -275,11 +315,22 @@ const UI = {
         options.dependent = ':destroy';
       }
 
+      if (document.getElementById('assoc-polymorphic').checked) {
+        options.polymorphic = true;
+      }
+
+      const throughModel = throughSelect.value;
+      if (throughModel) {
+        options.through = ':' + throughModel;
+      }
+
       Connections.create(fromModelId, toModelId, type, name, options);
       modal.classList.remove('active');
 
       document.getElementById('assoc-optional').checked = false;
       document.getElementById('assoc-dependent').checked = false;
+      document.getElementById('assoc-polymorphic').checked = false;
+      throughSelect.value = '';
     };
 
     document.getElementById('assoc-cancel').onclick = () => {

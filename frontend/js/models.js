@@ -255,9 +255,21 @@ const Models = {
   },
 
   updateConnections(modelId) {
+    const model = State.getModel(modelId);
+    if (!model) return;
+
     State.connections.forEach(conn => {
       if (conn.from === modelId || conn.to === modelId) {
         if (conn.line) conn.line.position();
+        if (conn.throughLine) conn.throughLine.position();
+      }
+
+      if (conn.options && conn.options.through) {
+        const throughModelName = conn.options.through.replace(':', '');
+        if (model.name.toLowerCase() === throughModelName.toLowerCase()) {
+          if (conn.line) conn.line.position();
+          if (conn.throughLine) conn.throughLine.position();
+        }
       }
     });
   }
